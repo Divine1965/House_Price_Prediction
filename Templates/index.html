@@ -1,0 +1,230 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Mumbai House Price Predictor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ffe5d9, #e0bbff);
+      background-attachment: fixed;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 30px;
+      font-weight: 700;
+      color: #3d3d3d;
+      margin-bottom: 22px;
+      text-shadow: 0 2px 8px rgba(255,255,255,0.5);
+    }
+
+    .box {
+      position: relative;
+      width: 90%;
+      max-width: 720px;
+      padding: 26px 32px;
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.65);
+      overflow: hidden;
+      z-index: 1;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    /* ✨ Live animated gradient border */
+    .box::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 22px;
+      background: linear-gradient(270deg, #ffafcc, #b5e48c, #ffc8dd, #a2d2ff, #ffafcc);
+      background-size: 600% 600%;
+      animation: borderMove 6s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes borderMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    label {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      margin-top: 14px;
+      color: #444;
+      gap: 10px;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+    }
+
+    .icon path {
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .loc-icon path { stroke: url(#grad1); }
+    .area-icon path { stroke: url(#grad2); }
+    .bhk-icon path { stroke: url(#grad3); }
+    .age-icon path { stroke: url(#grad4); }
+
+    label:hover .icon {
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 6px rgba(160,108,213,0.6));
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      margin: 6px 0 14px;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #a06cd5;
+      box-shadow: 0 0 8px rgba(160,108,213,0.4);
+      background: #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px 16px;
+      margin-top: 10px;
+      background: linear-gradient(135deg, #fcbf49, #f77f00);
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(247, 127, 0, 0.4);
+      background: linear-gradient(135deg, #ffb703, #fb8500);
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      background: rgba(0,0,0,0.1);
+      margin: 20px 0;
+    }
+
+    .err {
+      color: #e63946;
+      font-weight: 600;
+    }
+
+    p {
+      color: #555;
+      text-align: center;
+    }
+
+    strong {
+      color: #6a4c93;
+    }
+  </style>
+</head>
+<body>
+  <!-- Gradients for SVG icons -->
+  <svg width="0" height="0">
+    <defs>
+      <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ff6b6b"/>
+        <stop offset="100%" stop-color="#f7b801"/>
+      </linearGradient>
+      <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#48cae4"/>
+        <stop offset="100%" stop-color="#00b4d8"/>
+      </linearGradient>
+      <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffafcc"/>
+        <stop offset="100%" stop-color="#cdb4db"/>
+      </linearGradient>
+      <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#b5e48c"/>
+        <stop offset="100%" stop-color="#76c893"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <h1>🏙️ Mumbai House Price Predictor</h1>
+  <div class="box">
+    {% if error %}<p class="err">{{ error }}</p>{% endif %}
+    {% if prediction_text %}<h3>{{ prediction_text }}</h3>{% endif %}
+    <form method="post" action="/predict">
+      <label>
+        <svg class="icon loc-icon" viewBox="0 0 24 24">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+        Locality
+      </label>
+      <select name="locality" required>
+        {% for loc in locations %}
+          <option value="{{ loc }}">{{ loc }}</option>
+        {% endfor %}
+      </select>
+
+      <label>
+        <svg class="icon area-icon" viewBox="0 0 24 24">
+          <path d="M4 21v-2h16v2H4zm0-4V3h16v14H4zm2-2h12V5H6v10z"/>
+        </svg>
+        Area (sqft)
+      </label>
+      <input name="area" type="number" step="any" placeholder="e.g. 750" required />
+
+      <label>
+        <svg class="icon bhk-icon" viewBox="0 0 24 24">
+          <path d="M3 21v-6h6v6H3zm8 0v-6h10v6H11zM3 13V3h10v10H3zm12 0V3h6v10h-6z"/>
+        </svg>
+        BHK
+      </label>
+      <input name="bhk" type="number" step="1" min="1" placeholder="e.g. 2" required />
+
+      <label>
+        <svg class="icon age-icon" viewBox="0 0 24 24">
+          <path d="M12 8V4l8 8-8 8v-4H4V8z"/>
+        </svg>
+        Age (years) - optional
+      </label>
+      <input name="age" type="number" step="1" min="0" placeholder="e.g. 5" />
+
+      <button type="submit">Predict</button>
+    </form>
+    <hr/>
+    <p>💡 Tip: if your locality is rare, it will be treated as <strong>other</strong> by the model.</p>
+  </div>
+</body>
+</html>
